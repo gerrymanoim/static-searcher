@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>C++ Static Search Demo</title>
+</head>
+
+<body>
+    <!-- <script type="module">
+        import { search, default as init } from './static_search.js';
+        window.search = search;
+
+        async function run() {
+            await init('./static_search.wasm');
+        }
+    </script> -->
+    <script>
+        var Module = {
+            onRuntimeInitialized: function () {
+                window.search = Module.search;
+                window.test = Module.returnMapData;
+            }
+        };
+    </script>
+    <script src="static_search.js"></script>
+    <script>
+        // And afterwards we can use all the functionality defined in wasm.
+        function doSearch() {
+            let value = document.getElementById("demo").value;
+            const res = search(value, 10);
+            console.log(res);
+            let ul = document.getElementById("results");
+            ul.innerHTML = "";
+
+            let mapKeys = res.keys();
+            for (var i = 0; i < mapKeys.size(); i++) {
+                let key = mapKeys.get(i);
+                let li = document.createElement("li");
+
+                let elemlink = document.createElement('a');
+                elemlink.innerHTML = key;
+                elemlink.setAttribute('href', res.get(key));
+                li.appendChild(elemlink);
+
+                ul.appendChild(li);
+            }
+        }
+    </script>
+    <h2>Search:</h2>
+    <input type="text" id="demo" onkeyup="doSearch()">
+    <h2>Results:</h2>
+    <ul id="results">
+    </ul>
+</body>
+
+</html>
