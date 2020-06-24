@@ -1,6 +1,14 @@
-# C++ WSAM Static Search
+# C++ WebAssembly Static Search
 
 Heavily inspired by https://github.com/tinysearch/tinysearch.
+
+## Requirements
+
+- emsdk
+- gcc-9
+- cereal
+- nlohmann json
+- boost
 
 ## Current usage
 
