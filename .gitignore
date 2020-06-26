@@ -31,3 +31,12 @@
 *.exe
 *.out
 *.app
+
+
+# Generated Files
+*.bin
+*.data
+*.js
+
+# Cmake Builds
+build
