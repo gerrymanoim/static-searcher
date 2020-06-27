@@ -6,6 +6,18 @@ project(StaticSearcher VERSION 0.1
 
 set(CMAKE_CXX_STANDARD 17)
 
+function(make_includable input_file output_file)
+    file(READ ${input_file} content)
+    set(delim "for_c++_include")
+    set(content "R\"${delim}(\n${content})${delim}\"")
+    file(WRITE ${output_file} "${content}")
+endfunction(make_includable)
+
+make_includable(src/web/main.cc src/main.web.cc)
+
+make_includable(src/web/index.html src/index.html)
+
+
 
 find_package(nlohmann_json REQUIRED)
 find_package(cereal REQUIRED)
