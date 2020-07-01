@@ -1,34 +1,40 @@
 # C++ WebAssembly Static Search
 
+Status: Working POC
+
+
+
 Heavily inspired by https://github.com/tinysearch/tinysearch.
 
 ## Requirements
 
 - emsdk
-- gcc-9
 - cereal
 - nlohmann json
 - boost
 
+Tested on gcc-9 + linux.
+
 ## Current usage
 
-Not ideal. Just for my notes:
+Currently this runs in two stages. 
+
+First compile and execute the main program, passing in a json file and an output directory. 
 
 ```
-cd web
-em++ --std=gnu++17 -I/usr/local/Cellar/cereal/1.3.0/include -I/usr/local/Cellar/nlohmann-json/3.7.3/include -I/usr/local/Cellar/boost/1.72.0_3/include --bind --preload-file post_data.bin -o static_search.js main.cc
-python -m http.server 8999
+ ./main --input ../fixtures/index.json --output /home/g/tmp/static_test/
 ```
+
+Then navigate to the output directory you specifed a use cmake to compile the program there. 
+
+Finally, test your search in `<your-output-dir>/dist`.
 
 
 ## TODO
 
-- [ ] End to end program run
-
-- [ ] Better dependency inclusion
-- [ ] Makefile
 - [ ] Consider a more efficient data structure than `unordred_set`.
 - [ ] stop words, better clean up of post text
 - [ ] Come up with a scoring/ranking mechanism for results
-- [ ] Dedupe code via include file for main structures
-- [ ] use abseil containers
+
+- [ ] Can this work end to end?
+- [ ] Can you make the file sizes smaller here?
