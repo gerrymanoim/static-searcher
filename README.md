@@ -2,7 +2,7 @@
 
 Status: Working POC
 
-
+![](https://github.com/gerrymanoim/static-searcher/blob/master/demo.gif)
 
 Heavily inspired by https://github.com/tinysearch/tinysearch.
 
