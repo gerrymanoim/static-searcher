@@ -5,10 +5,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
-// for the life of me I cannot get boost+macOS+gcc-9 to play nicely so using this instead
-#include <cxxopts.hpp>
-
 #include <boost/algorithm/string.hpp>
+#include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 
 #include <cereal/archives/binary.hpp>
@@ -16,6 +14,7 @@
 #include <cereal/types/unordered_map.hpp>
 #include <cereal/types/unordered_set.hpp>
 #include <cereal/types/utility.hpp>
+
 #include <nlohmann/json.hpp>
 
 using name_url = std::pair<std::string, std::string>;
@@ -28,12 +27,24 @@ struct PairHash {
     }
 };
 
+constexpr char const *web_runner =
+#include "main.web.cc"
+;
+
+constexpr char const *web_page =
+#include "index.html"
+;
+
+constexpr char const *web_builder =
+#include "CMakeLists.web.txt"
+;
+
 // for convenience
 using json = nlohmann::json;
 
 void process_input(const std::filesystem::path& input_file_path,
                    const std::filesystem::path& output_directory) {
-    std::cout << "Parsing json at " << input_file_path;
+    std::cout << "Parsing json at " << input_file_path << "\n";
     json j;
     using post_contents = std::unordered_set<std::string>;
     std::unordered_map<name_url, post_contents, PairHash> post_map;
@@ -50,34 +61,58 @@ void process_input(const std::filesystem::path& input_file_path,
         post_map[key] = post_contents(tokens.begin(), tokens.end());
     };
 
-    auto build_dir = std::filesystem::temp_directory_path() / "static_searcher";
-    std::filesystem::create_directory(build_dir);
-    std::cout << "Building inside of " << build_dir;
+    std::filesystem::create_directory(output_directory);
+    std::cout << "Outputting to " << output_directory << "\n";
     {
-        std::ofstream output(build_dir / "post_data.bin", std::ios::binary);
+        std::ofstream output(output_directory / "post_data.bin", std::ios::binary);
         cereal::BinaryOutputArchive archive(output);
         archive(post_map);
     }
-}
-
-int main(int argc, char** argv) {
-
-    // clang-format off
-    cxxopts::Options options("StaticSearcher", "WebAssembly Static Site Searcher");
-    options.add_options()
-        ("help", "Print usage")
-        ("i,input", "input file path", cxxopts::value<std::string>())
-        ("output", "output directory", cxxopts::value<std::string>())
-    ;
-    // clang-format on
-
-    auto passed_options = options.parse(argc, argv);
-
-    if (passed_options.count("help") or !passed_options.count("input")) {
-        std::cout << options.help() << '\n';
-        return 1;
+    {
+        std::ofstream output(output_directory/ "main.cc");
+        output << web_runner;
+    }
+    {
+        std::ofstream output(output_directory/ "CMakeLists.txt");
+        output << web_builder;
     }
 
-    process_input(passed_options["input"].as<std::string>(),
-                  passed_options["output"].as<std::string>());
+    auto dist_directory = output_directory / "dist";
+    std::filesystem::create_directory(dist_directory);
+    {
+        std::ofstream output(dist_directory / "index.html");
+        output << web_page;
+    }
+}
+
+namespace po = boost::program_options;
+
+int main(int argc, const char* argv[]) {
+
+    try {
+        // clang-format off
+        po::options_description desc{"StaticSearcher - WebAssembly Static Site Searcher"};
+        desc.add_options()
+            ("help", "Print usage")
+            ("input", po::value<std::string>(), "input file path")
+            ("output", po::value<std::string>(), "output directory")
+        ;
+        // clang-format on
+        po::variables_map vm;
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::notify(vm);
+
+        if (vm.count("help") or !vm.count("input")) {
+            std::cout << desc << "\n";
+            return 1;
+        }
+
+        process_input(vm["input"].as<std::string>(), vm["output"].as<std::string>());
+
+        return 0;
+    }
+
+    catch (const po::error& ex) {
+        std::cerr << ex.what() << '\n';
+    }
 }

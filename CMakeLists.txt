@@ -17,20 +17,18 @@ make_includable(src/web/main.cc src/main.web.cc)
 
 make_includable(src/web/index.html src/index.html)
 
+make_includable(src/web/CMakeLists.txt src/CMakeLists.web.txt)
 
-
-find_package(nlohmann_json REQUIRED)
-find_package(cereal REQUIRED)
-find_package(cxxopts REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(cereal CONFIG REQUIRED)
 
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 
-find_package(Boost 1.50 REQUIRED)
+find_package(Boost COMPONENTS program_options REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIRS})
-
 
 add_executable(main src/main.cc)
 
